@@ -16,7 +16,7 @@ import mysql.connector
 
 DB_HOST = '127.0.0.1' 
 DB_USER = 'root' 
-DB_PASS = '22b17' 
+DB_PASS = 'XXXX' 
 DB_NAME = 'sparkData' 
 
 IP_SERVER="10.0.2.10"
