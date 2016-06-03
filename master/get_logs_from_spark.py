@@ -14,15 +14,7 @@ from pprint import pprint
 from datetime import date
 from datetime import datetime
 import mysql.connector
-
-DB_HOST = '127.0.0.1' 
-DB_USER = 'root' 
-DB_PASS = '22b17' 
-DB_NAME = 'sparkData' 
-
-IP_SERVER="10.0.2.10"
-PORT="8080"
-URL_GENERAL="/api/v1/applications/"
+from configPySpLogger import *
 
 def create_insert():
 	data=recupera_json("")
@@ -53,7 +45,7 @@ def create_insert():
 		#print ("query=\"INSERT INTO data (app_footprint,executors,jobs,stages) VALUE ( "+str(data[i]) +", "+str(data_executors)+", "+str(data_jobs)+", "+str(data_stages_json)+" )\"")
 		try:
 			query="""INSERT INTO data (app_footprint,executors,jobs,stages) VALUE ( %s, %s, %s, %s )"""
-			cnx = mysql.connector.connect(user='root', password='22b17',host='127.0.0.1',database='dataSpark')
+			cnx = mysql.connector.connect(user=DB_USER, password=DB_PASS,host=DB_HOST,database=DB_NAME)
 			cursor = cnx.cursor()
 			cursor.execute(query,(json.dumps(data[i]),json.dumps(data_executors),json.dumps(data_jobs),json.dumps(data_stages_json)))
 			cnx.commit()              # Hacer efectiva la escritura de datos 
