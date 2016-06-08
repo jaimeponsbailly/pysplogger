@@ -8,25 +8,36 @@ Author Jaime Pons
 '''
 
 import mysql.connector
+import time 
+import json
 from pprint import pprint
 from sys import argv
 from datetime import date
 from datetime import datetime
 from configPySpLogger import *
 
-def get_info():
+def get_info(lastId=0):
 	#try:
 		#query="""SELECT executors->"$[0].id" FROM data """
 		#query="""SELECT app_footprint->"$.attempts[0].endTime" FROM data """
-		query="""SELECT app_footprint->"$.id", app_footprint->"$.name", app_footprint->"$.attempts[0].startTime", app_footprint->"$.attempts[0].endTime" FROM data """
+		query="""SELECT id, app_footprint->"$.id", app_footprint->"$.name", app_footprint->"$.attempts[0].startTime", app_footprint->"$.attempts[0].endTime" FROM data WHERE id > %d """ % (lastId)
 		#query="""SELECT * FROM data """
+		print (query)
 		cnx = mysql.connector.connect(user=DB_USER, password=DB_PASS,host=DB_HOST,database=DB_NAME)
 		cursor = cnx.cursor()
 		cursor.execute(query)
 		data=cursor.fetchall() 
 		cursor.close()
 		cnx.close()
-		print_result(data)
+		print (data)
+		if len(data) == 0:
+			time.sleep(5)
+			get_info(lastId=lastId)
+		else:
+			lastID=print_result(data)
+			print("LAST ID---------"+str(lastID))
+			time.sleep(5)
+			get_info(lastId=lastID)
 	#except:
 	#	print ("Error creating the query to get JSON data")
 
@@ -38,6 +49,7 @@ def print_result(data):
 		fin=len(row)
 		toNumber= (fin - 1)
 		inicio=0
+		ret=row[0]
 		for y in row:
 			inicio += 1
 			if toNumber <= inicio:
@@ -51,7 +63,7 @@ def print_result(data):
 				print(str(y)+",", end="")
 		print("}")
 		#print()
-	
+	return ret
 
 def dateToTimestamp(fecha_orig): 
 	datetime1 = datetime.strptime(fecha_orig, "%Y-%m-%dT%H:%M:%S.%fGMT")
