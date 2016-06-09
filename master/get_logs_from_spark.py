@@ -19,7 +19,6 @@ from configPySpLogger import *
 def create_insert():
 	data=recupera_json("")
 	numberApps=len(data)
-	#print ("******* NUMBER APPS: " +str(numberApps))
 	for i in range(numberApps):
 		#print (data[i])
 		name=data[i]["id"]
@@ -28,27 +27,27 @@ def create_insert():
 		#print ("JOBS: "+str(data_jobs))
 		time.sleep(0.8)
 		data_executors=recupera_json(name+"/executors")
-		#print ("EXECUTOR: " + str(data_executors))
 		time.sleep(0.8)
 		data_stages=recupera_json(name+"/stages")
 		number_stages=len(data_stages)
 		for k in range(number_stages):
 			cadena=name+"/stages/"+str(k)
-			#print ("CADENA: "+cadena)
 			time.sleep(0.8)
 			if k > 0:
 				iter(data_stages_json).next()[k]=recupera_json(name+"/stages/"+str(k))
 			else:
 				data_stages_json=recupera_json(name+"/stages/"+str(k))
-		#print ("STAGES: "+str(data_stages_json))
 		
-		#print ("query=\"INSERT INTO data (app_footprint,executors,jobs,stages) VALUE ( "+str(data[i]) +", "+str(data_executors)+", "+str(data_jobs)+", "+str(data_stages_json)+" )\"")
 		try:
-			query="""INSERT INTO data (app_footprint,executors,jobs,stages) VALUE ( %s, %s, %s, %s )"""
 			cnx = mysql.connector.connect(user=DB_USER, password=DB_PASS,host=DB_HOST,database=DB_NAME)
 			cursor = cnx.cursor()
-			cursor.execute(query,(json.dumps(data[i]),json.dumps(data_executors),json.dumps(data_jobs),json.dumps(data_stages_json)))
-			cnx.commit()              # Hacer efectiva la escritura de datos 
+			query="""SELECT app_footprint->"$.id" FROM data WHERE app_footprint->"$.id" = '%s'  """ % (data[i]["id"])
+			cursor.execute(query)
+			datos=cursor.fetchall()              # Hacer efectiva la escritura de datos 
+			if len(datos) == 0:
+				query="""INSERT INTO data (app_footprint,executors,jobs,stages) VALUE ( %s, %s, %s, %s )"""
+				cursor.execute(query,(json.dumps(data[i]),json.dumps(data_executors),json.dumps(data_jobs),json.dumps(data_stages_json)))
+				cnx.commit()              # Hacer efectiva la escritura de datos 
 			cursor.close()
 			cnx.close()
 		except:

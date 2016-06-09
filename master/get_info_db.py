@@ -17,7 +17,7 @@ from datetime import datetime
 from configPySpLogger import *
 
 def get_info(lastId=0):
-	#try:
+	try:
 		#query="""SELECT executors->"$[0].id" FROM data """
 		#query="""SELECT app_footprint->"$.attempts[0].endTime" FROM data """
 		query="""SELECT id, app_footprint->"$.id", app_footprint->"$.name", app_footprint->"$.attempts[0].startTime", app_footprint->"$.attempts[0].endTime" FROM data WHERE id > %d """ % (lastId)
@@ -31,15 +31,14 @@ def get_info(lastId=0):
 		cnx.close()
 		print (data)
 		if len(data) == 0:
-			time.sleep(5)
-			get_info(lastId=lastId)
+			lastID=lastId
 		else:
 			lastID=print_result(data)
 			print("LAST ID---------"+str(lastID))
-			time.sleep(5)
-			get_info(lastId=lastID)
-	#except:
-	#	print ("Error creating the query to get JSON data")
+		time.sleep(5)
+		get_info(lastId=lastID)
+	except:
+		print ("Error creating the query to get JSON data")
 
 
 
