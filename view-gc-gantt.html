@@ -1,0 +1,90 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+
+	    google.charts.load("current", {packages:["gantt"]}) ;
+	    google.charts.setOnLoadCallback(onInitializeHandler) ;
+
+	    #var url = 'http://localhost:9999' ;
+	    var url = 'http://i163.117.170.140:9999' ;
+	    var dataTable = null ;
+	    var container = null ;
+
+	    var jsonStream = null ;
+	    var options = {
+        	    height: 275,
+	            gantt: {
+		          defaultStartDateMillis: new Date(2016, 3, 28)
+	    	    }
+	    };	         
+
+	    function onInitializeHandler ( ) 
+	    {
+	        container = document.getElementById('div_chart') ;
+
+	        dataTable = new google.visualization.DataTable();
+		dataTable.addColumn('string', 'Task ID');
+	        dataTable.addColumn('string', 'Task Name');
+	        dataTable.addColumn('string', 'Resource');
+	        dataTable.addColumn('date', 'Start');
+	        dataTable.addColumn('date', 'End');
+	        dataTable.addColumn('number', 'Duration');
+	        dataTable.addColumn('number', 'Percent Complete');
+	        dataTable.addColumn('string', 'Dependencies');
+	    }
+
+	    function onMessageHandler ( event ) 
+	    {
+		var elto_mon = JSON.parse(event.data); 
+
+		dataTable.addRow([ elto_mon.taskId, elto_mon.taskName, elto_mon.resource, elto_mon.start, elto_mon.end, elto_mon.duration, elto_mon.percent_complete, elto_mon.dependencies]);
+
+	        var chart = new google.visualization.Gantt(container) ;
+		chart.draw(dataTable, options) ;
+	    }
+
+	    function StartDrawing ( ) 
+	    {
+                if (null != jsonStream)
+                    return;
+
+		jsonStream = new EventSource(url) ;
+                jsonStream.addEventListener('error', 
+                                            function (e) { 
+                                                alert('Unable to connect: ' + url); 
+                                                StopDrawing(); 
+                                            }, false) ;
+                jsonStream.addEventListener('message', onMessageHandler) ;
+	    }
+
+	    function StopDrawing ( ) 
+	    {
+                if (null == jsonStream)
+                    return;
+
+                jsonStream.close() ;
+                jsonStream = null ;
+	    }
+
+  </script>
+</head>
+
+<body>
+  <table border="0" width="100%" cellpadding=10 cellspacing=10>
+    <tr align=right>
+      <td width="80%"> <input oninput="url=this.value;" type="text" id="input1" value="http://localhost:9999" size="50"> </td>
+      <td width="5%">  <button onclick="StopDrawing()">Stop</button> </td>
+      <td width="5%">  <button onclick="StartDrawing()">Start</button> </td>
+    </tr>
+    <tr>
+      <td colspan="3" bgcolor="#E5E5E5">
+      <div id="div_chart" style="height: 500px;"></div>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>
+
